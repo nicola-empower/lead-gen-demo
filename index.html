@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Generation Script (Demo)</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <style>
+        /* Using Inter font for a clean, professional look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        /* Using Fira Code for the terminal */
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            /* NEW: Techy gradient */
+            background: linear-gradient(135deg, #F0F9FF 0%, #F0FDF4 100%); /* light-blue to light-green */
+            overflow-x: hidden;
+        }
+
+        /* --- Glassmorphism Styles --- */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        /* --- Custom App Colors (System Blue & Green) --- */
+        .text-brand-blue { color: #2563EB; } /* blue-600 */
+        .bg-brand-blue { background-color: #2563EB; }
+        .border-brand-blue { border-color: #2563EB; }
+        .hover\:bg-brand-blue-hover:hover { background-color: #1D4ED8; } /* blue-700 */
+
+        .text-brand-green { color: #16A34A; } /* green-600 */
+        .bg-brand-green { background-color: #16A34A; }
+        .hover\:bg-brand-green-hover:hover { background-color: #15803D; } /* green-700 */
+
+        .text-brand-graphite { color: #374151; } /* gray-700 */
+
+        /* --- Terminal Styles --- */
+        .terminal-window {
+            font-family: 'Fira Code', monospace;
+            background-color: #1E293B; /* slate-800 */
+            color: #E2E8F0; /* slate-200 */
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.3s ease;
+        }
+        .terminal-line {
+            display: block;
+            white-space: pre-wrap;
+            animation: fadeIn 0.5s ease;
+        }
+        .terminal-line .text-green-400 { color: #4ADE80; }
+        .terminal-line .text-yellow-400 { color: #FACC15; }
+        .terminal-line .text-cyan-400 { color: #22D3EE; }
+
+        /* --- Results Table --- */
+        .results-table {
+            display: none; /* Hidden by default */
+            animation: fadeIn 1s ease;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeAndSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body class="p-4 md:p-12">
+
+    <main class="max-w-7xl mx-auto w-full">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-brand-graphite">Automated Lead Generation Script</h1>
+            <p class="text-lg text-gray-600">A "Process Automation" portfolio demo.</p>
+        </header>
+
+        <!-- Dev Note -->
+        <div class="glass-card mb-8 p-4 border-l-4 border-brand-blue rounded-lg">
+            <h4 class="font-bold text-brand-blue">Portfolio Dev Note:</h4>
+            <p class="text-gray-700">This demo simulates a real Python script I built to automate lead generation. The client's original ad-hoc process was transformed into this reliable system, saving them 8+ hours per week.
+            <br>
+            **This demo scenario is targeting "Landscapers" in "Central Scotland"** to show how the script works.
+            <br>
+            Click **"Run Script"** to watch the simulated 'live' terminal output and see the final generated lead list.
+            </p>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="glass-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-12 h-12 bg-brand-green text-white rounded-full flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-600">Qualified Leads Generated</h3>
+                        <p id="kpi-leads" class="text-4xl font-extrabold text-brand-graphite">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 w-12 h-12 bg-brand-blue text-white rounded-full flex items-center justify-center">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-600">Admin Hours Saved (Weekly)</h3>
+                        <p id="kpi-hours" class="text-4xl font-extrabold text-brand-graphite">0+</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App Container -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Control Panel -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-2xl shadow-xl p-6 sticky top-8">
+                    <h2 class="text-2xl font-bold text-brand-graphite mb-6">Script Control Panel</h2>
+                    <form id="script-form" class="space-y-4">
+                        <div>
+                            <label for="industry" class="block text-sm font-medium text-gray-700">Industry to Target</label>
+                            <select id="industry" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue">
+                                <option>Landscapers</option>
+                                <option>Joiners</option>
+                                <option>Event Planners</option>
+                                <option>SaaS Companies</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700">Location to Scan</label>
+                            <input type="text" id="location" class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-brand-blue focus:border-brand-blue" value="Central Scotland">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data to Find</label>
+                            <div class="mt-2 space-y-2">
+                                <div class="flex items-center">
+                                    <input id="data-name" type="checkbox" class="h-4 w-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue" checked disabled>
+                                    <label for="data-name" class="ml-2 text-sm text-gray-600">Business Name (Required)</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="data-email" type="checkbox" class="h-4 w-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue" checked>
+                                    <label for="data-email" class="ml-2 text-sm text-gray-700">Contact Email</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input id="data-phone" type="checkbox" class="h-4 w-4 text-brand-blue border-gray-300 rounded focus:ring-brand-blue" checked>
+                                    <label for="data-phone" class="ml-2 text-sm text-gray-700">Phone Number</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" id="run-script-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-brand-blue hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-blue transition-all">
+                            <i data-lucide="play" class="w-5 h-5 mr-2"></i>
+                            Run Lead Generation Script
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Column: Output -->
+            <div class="lg:col-span-2">
+                <!-- Terminal Window -->
+                <div id="terminal" class="terminal-window rounded-t-lg p-4 shadow-xl">
+                    <div class="flex items-center gap-1.5 mb-4">
+                        <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+                        <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+                        <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+                    </div>
+                    <div id="terminal-output">
+                        <!-- Log lines will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div id="results" class="results-table glass-card rounded-b-lg shadow-xl overflow-hidden">
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-xl font-bold text-brand-graphite">Generated Lead List</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50/50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Business Name</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                To
+                                </tr>
+                            </thead>
+                            <tbody id="results-table-body" class="bg-white/50 divide-y divide-gray-200">
+                                <!-- Rows injected by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            const form = document.getElementById('script-form');
+            const runBtn = document.getElementById('run-script-btn');
+            const terminal = document.getElementById('terminal');
+            const terminalOutput = document.getElementById('terminal-output');
+            const resultsTable = document.getElementById('results');
+            const resultsBody = document.getElementById('results-table-body');
+            const kpiLeads = document.getElementById('kpi-leads');
+            const kpiHours = document.getElementById('kpi-hours');
+            
+            let simulationRunning = false;
+
+            const fakeLeads = [
+                { name: 'GreenLeaf Gardens', contact: 'J. Smith', email: 'info@greenleaf.scot', status: 'Hot' },
+                { name: 'Urban Oasis Landscaping', contact: 'A. McTavish', email: 'a.mctavish@urbanoasis.com', status: 'Qualified' },
+                { name: 'Caledonian Landscapes', contact: 'R. Burns', email: 'quotes@caledonian.co.uk', status: 'Warm' },
+                { name: 'Thistle & Stone', contact: 'F. Murray', email: 'f.murray@thistleandstone.com', status: 'Qualified' },
+                { name: 'Highland Patios & Paving', contact: 'S. Reid', email: 'sreid@highlandpatios.scot', status: 'Hot' },
+                { name: 'Forth Valley Gardens', contact: 'L. Wallace', email: 'contact@forthvalley.co.uk', status: 'New' },
+                { name: 'Bonnie Brae Landscapers', contact: 'K. Bell', email: 'kbell@bonniebrae.com', status: 'Qualified' },
+                { name: 'Loch Lomond Lawns', contact: 'G. Brown', email: 'info@lochl.scot', status: 'Warm' },
+                { name: 'Stirling Scapes', contact: 'M. Grant', email: 'enquiries@stirlingscapes.com', status: 'New' },
+                { name: 'The Edinburgh Gardener', contact: 'E. Davidson', email: 'contact@edgardener.co.uk', status: 'Hot' },
+                { name: 'Perthshire Patios', contact: 'D. Shaw', email: 'd.shaw@perthpatios.com', status: 'Qualified' },
+                { name: 'Glasgow Green Gardens', contact: 'P. Wilson', email: 'pwilson@ggg.co.uk', status: 'New' }
+                // We'll just show these, but imply 42
+            ];
+
+            const typeLine = (line, delay) => {
+                return new Promise(resolve => {
+                    setTimeout(() => {
+                        const lineEl = document.createElement('span');
+                        lineEl.className = 'terminal-line';
+                        lineEl.innerHTML = line;
+                        terminalOutput.appendChild(lineEl);
+                        terminal.scrollTop = terminal.scrollHeight; // Auto-scroll
+                        resolve();
+                    }, delay);
+                });
+            };
+
+            const countUp = (el, to, suffix = '') => {
+                let from = 0;
+                const speed = 2000 / to; // 2 seconds total
+                const counter = setInterval(() => {
+                    from++;
+                    el.textContent = from + suffix;
+                    if (from === to) {
+                        clearInterval(counter);
+                    }
+                }, speed);
+            };
+
+            const showResults = () => {
+                // 1. Animate KPIs
+                countUp(kpiLeads, 42);
+                countUp(kpiHours, 8, '+');
+
+                // 2. Populate table
+                resultsBody.innerHTML = '';
+                fakeLeads.forEach(lead => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50/50';
+                    row.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${lead.name}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${lead.contact}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${lead.email}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                            <span class="px-2.5 py-0.5 rounded-full text-xs ${lead.status === 'Hot' ? 'bg-red-100 text-red-800' : lead.status === 'Warm' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}">
+                                ${lead.status}
+                            </span>
+                        </td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+
+                // 3. Show table
+                resultsTable.style.display = 'block';
+            };
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (simulationRunning) return;
+                
+                simulationRunning = true;
+                runBtn.disabled = true;
+                runBtn.innerHTML = '<i data-lucide="loader" class="w-5 h-5 mr-2 animate-spin"></i>Processing...';
+                lucide.createIcons();
+
+                // 1. Reset
+                kpiLeads.textContent = '0';
+                kpiHours.textContent = '0+';
+                terminalOutput.innerHTML = '';
+                resultsTable.style.display = 'none';
+                terminal.style.display = 'block';
+
+                // 2. Get form data
+                const industry = document.getElementById('industry').value;
+                const location = document.getElementById('location').value;
+
+                // 3. Run typing simulation
+                await typeLine(`$ python lead_gen.py --target="${industry}" --location="${location}"`, 100);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Initializing Python script...`, 300);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Authentication successful.`, 200);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Targeting industry: '${industry}' in location: '${location}'.`, 400);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Scraping 'yell.com' for new listings...`, 500);
+                await typeLine(`<span class="text-yellow-400">[WARN]</span> Found 127 new business listings. Cross-referencing with DB...`, 300);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Found 42 unique new businesses.`, 400);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Beginning contact enrichment...`, 200);
+                await typeLine(`- Finding contacts for 'GreenLeaf Gardens'... <span class="text-green-400">OK</span>`, 300);
+                await typeLine(`- Finding contacts for 'Urban Oasis Landscaping'... <span class="text-green-400">OK</span>`, 250);
+                await typeLine(`- Finding contacts for 'Caledonian Landscapes'... <span class="text-green-400">OK</span>`, 300);
+                await typeLine(`- Finding contacts for 'Thistle & Stone'... <span class="text-green-400">OK</span>`, 200);
+                await typeLine(`- ... (processing remaining leads) ...`, 500);
+                await typeLine(`<span class="text-green-400">[SUCCESS]</span> Process complete. 42 qualified leads generated.`, 300);
+                await typeLine(`<span class="text-cyan-400">[INFO]</span> Output saved to 'leads_output.csv'.`, 100);
+                await typeLine(`$ `, 50);
+
+                // 4. Show results
+                showResults();
+
+                // 5. Reset button
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i data-lucide="play" class="w-5 h-5 mr-2"></i>Run Lead Generation Script';
+                lucide.createIcons();
+                simulationRunning = false;
+            });
+        });
+    </script>
+</body>
+</html>
